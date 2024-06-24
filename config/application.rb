@@ -29,8 +29,15 @@ module WonderfulEditor
       g.stylesheets false
       g.helper false
       g.template_engine false
-      g.test_framework :rspec
+      g.test_framework :rspec,
+                       view_specs: false,
+                       routing_specs: false,
+                       helper_specs: false,
+                       controller_specs: false,
+                       request_specs: true
     end
+
+    config.api_only = true
 
     # Configuration for the application, engines, and railties goes here.
     #
