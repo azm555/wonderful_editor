@@ -19,9 +19,12 @@
 #  fk_rails_...  (article_id => articles.id)
 #  fk_rails_...  (user_id => users.id)
 #
-class Comment < ApplicationRecord
-  belongs_to :user
-  belongs_to :article
-
-  validates :content, presence: true
+FactoryBot.define do
+  factory :comment do
+    content { "コメント本文" }
+    user
+    # association :user, factory: :user
+    article
+    # association :article, factory: :article
+  end
 end

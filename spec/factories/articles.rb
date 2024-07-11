@@ -17,12 +17,11 @@
 #
 #  fk_rails_...  (user_id => users.id)
 #
-class Article < ApplicationRecord
-  has_many :comments, dependent: :destroy
-  has_many :likes, dependent: :destroy
-
-  belongs_to :user
-
-  validates :title, presence: true
-  validates :content, presence: true
+FactoryBot.define do
+  factory :article do
+    title { "記事タイトル" }
+    content { "記事本文" }
+    user
+    # association :user, factory: :user
+  end
 end
