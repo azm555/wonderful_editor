@@ -19,8 +19,8 @@
 #
 FactoryBot.define do
   factory :article do
-    title { "記事タイトル" }
-    content { "記事本文" }
+    sequence(:title) { |n| "記事タイトル#{n}" }
+    sequence(:content) { |n| "記事本文#{n}" }
     user
     # association :user, factory: :user
   end
