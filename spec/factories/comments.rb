@@ -21,7 +21,7 @@
 #
 FactoryBot.define do
   factory :comment do
-    content { "コメント本文" }
+    sequence(:content) {|n| "コメント本文#{n}" }
     user
     # association :user, factory: :user
     article
