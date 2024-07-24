@@ -31,9 +31,8 @@
 require "rails_helper"
 
 RSpec.describe User, type: :model do
-  context "nameカラムを指定しているとき" do
+  context "name,email,passwordカラムを指定しているとき" do
     it "ユーザーが作成される" do
-      # binding.pry
       user = FactoryBot.build(:user)
       # user = User.new(name: "foo", password: "fooooo", email: "foo@example.com")
       expect(user).to be_valid
@@ -50,24 +49,23 @@ RSpec.describe User, type: :model do
     end
   end
 
-  # context "まだ同じ名前のnameカラムが存在していないとき" do
-  #   it "ユーザーが作成される" do
-  #     user = User.new(name: "foo", password: "fooooo", email: "foo@example.com")
-  #     expect(user).to be_valid
-  #   end
-  # end
-  # 1つめのテストと同じため実装の必要なし
+  context "emailカラムを指定していないとき" do
+    it "ユーザー作成に失敗する" do
+      user = FactoryBot.build(:user, email: nil)
+      # nameカラムを指定していないのでnilとした
+      # user = User.new(password: "fooooo", email: "foo@example.com")
+      expect(user).to be_invalid
+      # expect(user.errors.details[:name][0][:error]).to eq :blank
+    end
+  end
 
-  # context "すでに同じ名前のnameカラムが存在しているとき" do
-  #   it "ユーザー作成に失敗する" do
-  #     FactoryBot.create(:user, name: "foo")
-  #     # User.create!(name: "foo", password: "fooooo", email: "foo@example.com")
-  #     user = FactoryBot.build(:user, name: "foo")
-  #     # user = User.new(name: "foo", password: "barbar", email: "bar@example.com")
-
-  #     expect(user).to be_invalid
-  #     # binding.pry
-  #     expect(user.errors.details[:name][0][:error]).to eq :taken
-  #   end
-  # end
+  context "passwordカラムを指定していないとき" do
+    it "ユーザー作成に失敗する" do
+      user = FactoryBot.build(:user, password: nil)
+      # nameカラムを指定していないのでnilとした
+      # user = User.new(password: "fooooo", email: "foo@example.com")
+      expect(user).to be_invalid
+      # expect(user.errors.details[:name][0][:error]).to eq :blank
+    end
+  end
 end
