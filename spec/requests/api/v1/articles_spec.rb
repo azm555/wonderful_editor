@@ -7,6 +7,7 @@ RSpec.describe "Api::V1::Articles", type: :request do
     # before { 3.times { FactoryBot.create(:article) } } # FactoryBotを介して記事情報を3つ作成
     # before { create_list(:article, 3) } # FactoryBotのcreate_listメソッドを用いた記述に変更
     before { create_list(:article, article_count) } # letを用いた記述に変更
+
     let(:article_count) { 3 }
 
     # rubocop推奨のため、"記事の一覧が取得できる"テストを分割表示した
@@ -30,16 +31,23 @@ RSpec.describe "Api::V1::Articles", type: :request do
 
   describe "GET /api/v1/articles/:id" do
     subject { get(api_v1_article_path(article_id)) } # 記事詳細取得:showメソッドのpathへアクセスする（ルーティング確認）、詳細なのでidを指定するためarticle_id（letで定義した変数）を追記
+
     context "指定したidの記事が存在するとき" do
       let(:article_id) { article.id }
       let(:article) { FactoryBot.create(:article) }
 
-      # rubocop推奨のため、"その記事のレコードが取得できる"というテストを2つに分割した
-      it "指定したidの記事データが返ってくること" do # リクエスト情報と返ってきた記事データが一致すること
+      # rubocop推奨のため、"その記事のレコードが取得できる"というテストを2つに分割　"指定したidの記事データが返ってくること"と"ステータスコードが200であること"
+      # さらに"指定したidの記事データが返ってくること"を2つに分割した
+      it "指定したidの記事データのうちタイトルが返ってくること" do # リクエストデータと返ってきた記事データが一致すること
         subject
         res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
         # binding.pry
         expect(res["title"]).to eq article.title
+      end
+
+      it "指定したidの記事データのうち本文が返ってくること" do
+        subject
+        res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
         expect(res["content"]).to eq article.content
       end
 
@@ -50,11 +58,11 @@ RSpec.describe "Api::V1::Articles", type: :request do
     end
 
     context "指定したidの記事が存在しないとき" do
-    let(:article_id) { 100000 } # 被らないidを指定するため、大きい数値を記述した
+      let(:article_id) { 100000 } # 被らないidを指定するため、大きい数値を記述した
 
       it "記事のレコードが見つからない" do
         # binding.pry
-        expect{ subject }.to raise_error(ActiveRecord::RecordNotFound)
+        expect { subject }.to raise_error(ActiveRecord::RecordNotFound)
       end
     end
   end
