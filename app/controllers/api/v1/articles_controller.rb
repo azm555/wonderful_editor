@@ -20,6 +20,12 @@ module Api
         render json: @article, each_serializer: ArticleSerializer
       end
 
+      def update
+        @article = Article.find(params[:id]) # 記事の取得
+        @article.update!(article_params) # 記事の更新
+        render json: @article, each_serializer: ArticleSerializer
+      end
+
       private
 
         def article_params
