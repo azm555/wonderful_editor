@@ -66,4 +66,67 @@ RSpec.describe "Api::V1::Articles", type: :request do
       end
     end
   end
+
+  describe "POST /api/v1/articles" do
+    subject { post(api_v1_articles_path, params: params) } # createメソッドのpathへアクセスする（ルーティング確認）、paramsを送るためにparams設置（paramsは下記でそれぞれ定義する）
+
+    context "適切なパラメーターを送信したとき" do
+      # FactoryBotを用いて、ランダム生成されたtitle,contentパラメーターを、controllerのarticle_paramsにおけるparams.require(:article)に対応するようarticleキー（:article）に対するバリューの形式で送る
+      let(:params) do
+        { article: FactoryBot.attributes_for(:article) }
+      end
+
+      it "記事のレコードが1つ作成される" do
+        # モックを用いてcurrent_userが呼ばれたときに持ってくるデータを指定する
+        # 今回は適当なユーザー情報（FactoryBotでランダム生成）を指定する？
+        current_user_mock = FactoryBot.create(:user)
+        # Api::V1::BaseApiControllerクラスの全インスタンスに対して、current_userメソッドが呼ばれたときにモックを返すようにする
+        # allow_any_instance_of(実装を置き換えたいオブジェクト).to receive(置き換えたいメソッド名).and_return(返却したい値やオブジェクト)
+        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+        expect { subject }.to change { Article.count }.by(1)
+      end
+
+      it "送ったパラメーターをもとに記事のレコード(titleカラム)が作成される" do
+        current_user_mock = FactoryBot.create(:user)
+        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+        subject
+        res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
+        # res(レスポンス)の値（実際に作成されたレコードのうち、titleカラム）とリクエストとして送ったパラメーター（let(:params)）の値が一致すること
+        expect(res["title"]).to eq params[:article][:title]
+      end
+
+      it "送ったパラメーターをもとに記事のレコード(contentカラム)が作成される" do
+        current_user_mock = FactoryBot.create(:user)
+        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+        subject
+        res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
+        # res(レスポンス)の値（実際に作成されたレコードのうち、contentカラム）とリクエストとして送ったパラメーター（let(:params)）の値が一致すること
+        expect(res["content"]).to eq params[:article][:content]
+      end
+
+      it "ステータスコードが200であること" do
+        current_user_mock = FactoryBot.create(:user)
+        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+        subject
+        expect(response).to have_http_status(200)
+      end
+    end
+
+    context "不適切なパラメーターを送信したとき" do
+      let(:params) do # FactoryBotを用いて、ランダム生成されたtitle,contentパラメーターをarticleキー（:article）に対応しない形式で送る
+        FactoryBot.attributes_for(:article)
+      end
+
+      it "エラーする" do
+        current_user_mock = FactoryBot.create(:user)
+        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+        expect { subject }.to raise_error(ActionController::ParameterMissing)
+      end
+    end
+  end
 end

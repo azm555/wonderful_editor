@@ -14,6 +14,12 @@ module Api
         render json: @article, each_serializer: ArticleSerializer
       end
 
+      def create
+        # current_user（User.firstのユーザー）に紐づけられた新規記事のインスタンスを生成・保存する
+        @article = current_user.articles.create!(article_params)
+        render json: @article, each_serializer: ArticleSerializer
+      end
+
       private
 
         def article_params
