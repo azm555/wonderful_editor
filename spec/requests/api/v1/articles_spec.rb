@@ -84,6 +84,7 @@ RSpec.describe "Api::V1::Articles", type: :request do
         # allow_any_instance_of(実装を置き換えたいオブジェクト).to receive(置き換えたいメソッド名).and_return(返却したい値やオブジェクト)
         allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
+        # 記事のレコード数が1つ増える
         expect { subject }.to change { Article.count }.by(1)
       end
 
@@ -127,6 +128,47 @@ RSpec.describe "Api::V1::Articles", type: :request do
 
         expect { subject }.to raise_error(ActionController::ParameterMissing)
       end
+    end
+  end
+
+  describe "PATCH /api/v1/articles/:id" do
+    subject {
+      patch(api_v1_article_path(article_id), params: params)
+    } # 記事更新情報取得:updateメソッドのpathへアクセスする（ルーティング確認）、idを指定するためarticle_id（letで定義した変数）を追記、paramsを送るためにparams設置（paramsは下記でそれぞれ定義する）
+
+    # FactoryBotを用いて、記事情報をランダムに生成しておく
+    let(:article_id) { article.id }
+    let(:article) { FactoryBot.create(:article) }
+
+    # 上記でidを指定して呼び出した記事に更新するパラメーターを送る
+    # controllerのarticle_paramsにおけるparams.require(:article)に対応するようarticleキー（:article）に対するバリューの形式で送る
+    let(:params) do
+      { article: { title: "タイトル更新1", created_at: 1.day.ago } }
+    end
+
+    it "指定したidの記事のレコードのうち送ったパラメーターのみ（titleカラム）更新される" do
+      # createメソッドと同様にモックを使用
+      current_user_mock = FactoryBot.create(:user)
+      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+      # 指定したidの記事のtitleカラムが送ったパラメーターに変わる（更新される）
+      expect { subject }.to change { Article.find(article_id).title }.from(article.title).to(params[:article][:title])
+    end
+
+    it "指定したidの記事のレコードのうち送っていないパラメーター（contentカラム）は変わらない" do
+      current_user_mock = FactoryBot.create(:user)
+      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+      # 指定したidの記事のcontentカラムが変わらない
+      expect { subject }.not_to change { Article.find(article_id).content }
+    end
+
+    it "指定したidの記事のレコードのうち書き換え不可のパラメーター（created_atカラム）は変わらない" do
+      current_user_mock = FactoryBot.create(:user)
+      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+
+      # 指定したidの記事のcreated_atカラムが変わらない
+      expect { subject }.not_to change { Article.find(article_id).created_at }
     end
   end
 end
