@@ -132,9 +132,8 @@ RSpec.describe "Api::V1::Articles", type: :request do
   end
 
   describe "PATCH /api/v1/articles/:id" do
-    subject {
-      patch(api_v1_article_path(article_id), params: params)
-    } # 記事更新情報取得:updateメソッドのpathへアクセスする（ルーティング確認）、idを指定するためarticle_id（letで定義した変数）を追記、paramsを送るためにparams設置（paramsは下記でそれぞれ定義する）
+    subject { patch(api_v1_article_path(article_id), params: params) }
+    # 更新対象の記事情報取得:updateメソッドのpathへアクセスする（ルーティング確認）、idを指定するためarticle_id（letで定義した変数）を追記、paramsを送るためにparams設置（paramsは下記でそれぞれ定義する）
 
     # FactoryBotを用いて、記事情報をランダムに生成しておく
     let(:article_id) { article.id }
@@ -169,6 +168,19 @@ RSpec.describe "Api::V1::Articles", type: :request do
 
       # 指定したidの記事のcreated_atカラムが変わらない
       expect { subject }.not_to change { Article.find(article_id).created_at }
+    end
+  end
+
+  describe "DELETE /api/v1/articles/:id" do
+    subject { delete(api_v1_article_path(article_id)) }
+    # 削除対象の記事情報取得:destroyメソッドのpathへアクセスする（ルーティング確認）、idを指定するためarticle_id（letで定義した変数）を追記
+
+    # FactoryBotを用いて、記事情報をランダムに生成しておく
+    let(:article_id) { article.id } # 上記(article_id)をletで定義する
+    let!(:article) { FactoryBot.create(:article) } # 上記articleをletで定義する
+
+    it "指定したidの記事のレコードが削除される" do
+      expect { subject }.to change { Article.count }.by(-1)
     end
   end
 end

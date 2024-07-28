@@ -26,6 +26,12 @@ module Api
         render json: @article, each_serializer: ArticleSerializer
       end
 
+      def destroy
+        @article = Article.find(params[:id]) # 記事の取得
+        @article.destroy! # 記事の削除
+        render json: @article, each_serializer: ArticleSerializer
+      end
+
       private
 
         def article_params
