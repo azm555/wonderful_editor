@@ -12,7 +12,7 @@ RSpec.describe "Api::V1::Auth::Registrations", type: :request do # ログイン�
       let(:params) do
         {
           email: user.email,
-          password: user.password
+          password: user.password,
         }
       end
 
@@ -42,11 +42,11 @@ RSpec.describe "Api::V1::Auth::Registrations", type: :request do # ログイン�
       # 上記で生成された新規ユーザーのemail,passwordパラメーターのうち、email情報が送られない
       let(:params) do
         {
-          password: user.password
+          password: user.password,
         }
       end
 
-      fit "エラーする" do
+      it "エラーする" do
         subject
         res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
         # binding.pry
