@@ -68,29 +68,35 @@ RSpec.describe "Api::V1::Articles", type: :request do
   end
 
   describe "POST /api/v1/articles" do
-    subject { post(api_v1_articles_path, params: params) } # createメソッドのpathへアクセスする（ルーティング確認）、paramsを送るためにparams設置（paramsは下記でそれぞれ定義する）
+    subject { post(api_v1_articles_path, params: params, headers: headers) }
+    # createメソッドのpathへアクセスする（ルーティング確認）、paramsを送るためにparams設置（paramsは下記でそれぞれ定義する）、ログインユーザー判別のためにheaders設置
 
     context "適切なパラメーターを送信したとき" do
       # FactoryBotを用いて、ランダム生成されたtitle,contentパラメーターを、controllerのarticle_paramsにおけるparams.require(:article)に対応するようarticleキー（:article）に対するバリューの形式で送る
       let(:params) do
         { article: FactoryBot.attributes_for(:article) }
       end
+      # ログインユーザー判別のためにheaders情報のうち、必要なトークン情報を送る
+      let(:headers) do
+        current_user.create_new_auth_token
+      end
+
+      # Letにより、テスト実行前にFactoryBotを用いて、ランダム生成されたname,email,passwordパラメーターを送り、新規ユーザー登録を行う
+      let(:current_user) { FactoryBot.create(:user) }
+
+      # 上記ユーザー情報のうち、email,password情報を用いてログインする（header情報の発行）、ログイン機能のテスト参照
+      before do
+        post(api_v1_user_session_path, params: { email: current_user.email, password: current_user.password })
+      end
 
       it "記事のレコードが1つ作成される" do
-        # モックを用いてcurrent_userが呼ばれたときに持ってくるデータを指定する
-        # 今回は適当なユーザー情報（FactoryBotでランダム生成）を指定する？
-        current_user_mock = FactoryBot.create(:user)
-        # Api::V1::BaseApiControllerクラスの全インスタンスに対して、current_userメソッドが呼ばれたときにモックを返すようにする
-        # allow_any_instance_of(実装を置き換えたいオブジェクト).to receive(置き換えたいメソッド名).and_return(返却したい値やオブジェクト)
-        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
-
         # 記事のレコード数が1つ増える
         expect { subject }.to change { Article.count }.by(1)
       end
 
       it "送ったパラメーターをもとに記事のレコード(titleカラム)が作成される" do
-        current_user_mock = FactoryBot.create(:user)
-        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+        # current_user_mock = FactoryBot.create(:user)
+        # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
         subject
         res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
@@ -99,8 +105,8 @@ RSpec.describe "Api::V1::Articles", type: :request do
       end
 
       it "送ったパラメーターをもとに記事のレコード(contentカラム)が作成される" do
-        current_user_mock = FactoryBot.create(:user)
-        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+        # current_user_mock = FactoryBot.create(:user)
+        # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
         subject
         res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
@@ -109,8 +115,8 @@ RSpec.describe "Api::V1::Articles", type: :request do
       end
 
       it "ステータスコードが200であること" do
-        current_user_mock = FactoryBot.create(:user)
-        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+        # current_user_mock = FactoryBot.create(:user)
+        # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
         subject
         expect(response).to have_http_status(200)
@@ -121,10 +127,22 @@ RSpec.describe "Api::V1::Articles", type: :request do
       let(:params) do # FactoryBotを用いて、ランダム生成されたtitle,contentパラメーターをarticleキー（:article）に対応しない形式で送る
         FactoryBot.attributes_for(:article)
       end
+      # ログインユーザー判別のためにheaders情報のうち、必要なトークン情報を送る
+      let(:headers) do
+        current_user.create_new_auth_token
+      end
+
+      # Letにより、テスト実行前にFactoryBotを用いて、ランダム生成されたname,email,passwordパラメーターを送り、新規ユーザー登録を行う
+      let(:current_user) { FactoryBot.create(:user) }
+
+      # 上記ユーザー情報のうち、email,password情報を用いてログインする（header情報の発行）、ログイン機能のテスト参照
+      before do
+        post(api_v1_user_session_path, params: { email: current_user.email, password: current_user.password })
+      end
 
       it "エラーする" do
-        current_user_mock = FactoryBot.create(:user)
-        allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+        # current_user_mock = FactoryBot.create(:user)
+        # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
         expect { subject }.to raise_error(ActionController::ParameterMissing)
       end
@@ -132,11 +150,15 @@ RSpec.describe "Api::V1::Articles", type: :request do
   end
 
   describe "PATCH /api/v1/articles/:id" do
-    subject { patch(api_v1_article_path(article_id), params: params) }
+    subject { patch(api_v1_article_path(article_id), params: params, headers: headers) }
     # 更新対象の記事情報取得:updateメソッドのpathへアクセスする（ルーティング確認）、idを指定するためarticle_id（letで定義した変数）を追記、paramsを送るためにparams設置（paramsは下記でそれぞれ定義する）
 
     # FactoryBotを用いて、記事情報をランダムに生成しておく
     let(:article_id) { article.id }
+    # ログインユーザー判別のためにheaders情報のうち、必要なトークン情報を送る
+    let(:headers) do
+      current_user.create_new_auth_token
+    end
     let(:article) { FactoryBot.create(:article) }
 
     # 上記でidを指定して呼び出した記事に更新するパラメーターを送る
@@ -145,26 +167,34 @@ RSpec.describe "Api::V1::Articles", type: :request do
       { article: { title: "タイトル更新1", created_at: 1.day.ago } }
     end
 
+    # Letにより、テスト実行前にFactoryBotを用いて、ランダム生成されたname,email,passwordパラメーターを送り、新規ユーザー登録を行う
+    let(:current_user) { FactoryBot.create(:user) }
+
+    # 上記ユーザー情報のうち、email,password情報を用いてログインする（header情報の発行）、ログイン機能のテスト参照
+    before do
+      post(api_v1_user_session_path, params: { email: current_user.email, password: current_user.password })
+    end
+
     it "指定したidの記事のレコードのうち送ったパラメーターのみ（titleカラム）更新される" do
-      # createメソッドと同様にモックを使用
-      current_user_mock = FactoryBot.create(:user)
-      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+      # # createメソッドと同様にモックを使用
+      # current_user_mock = FactoryBot.create(:user)
+      # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
       # 指定したidの記事のtitleカラムが送ったパラメーターに変わる（更新される）
       expect { subject }.to change { Article.find(article_id).title }.from(article.title).to(params[:article][:title])
     end
 
     it "指定したidの記事のレコードのうち送っていないパラメーター（contentカラム）は変わらない" do
-      current_user_mock = FactoryBot.create(:user)
-      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+      # current_user_mock = FactoryBot.create(:user)
+      # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
       # 指定したidの記事のcontentカラムが変わらない
       expect { subject }.not_to change { Article.find(article_id).content }
     end
 
     it "指定したidの記事のレコードのうち書き換え不可のパラメーター（created_atカラム）は変わらない" do
-      current_user_mock = FactoryBot.create(:user)
-      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
+      # current_user_mock = FactoryBot.create(:user)
+      # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
 
       # 指定したidの記事のcreated_atカラムが変わらない
       expect { subject }.not_to change { Article.find(article_id).created_at }
@@ -172,12 +202,24 @@ RSpec.describe "Api::V1::Articles", type: :request do
   end
 
   describe "DELETE /api/v1/articles/:id" do
-    subject { delete(api_v1_article_path(article_id)) }
+    subject { delete(api_v1_article_path(article_id), headers: headers) }
     # 削除対象の記事情報取得:destroyメソッドのpathへアクセスする（ルーティング確認）、idを指定するためarticle_id（letで定義した変数）を追記
 
     # FactoryBotを用いて、記事情報をランダムに生成しておく
     let(:article_id) { article.id } # 上記(article_id)をletで定義する
+    # ログインユーザー判別のためにheaders情報のうち、必要なトークン情報を送る
+    let(:headers) do
+      current_user.create_new_auth_token
+    end
     let!(:article) { FactoryBot.create(:article) } # 上記articleをletで定義する
+
+    # Letにより、テスト実行前にFactoryBotを用いて、ランダム生成されたname,email,passwordパラメーターを送り、新規ユーザー登録を行う
+    let(:current_user) { FactoryBot.create(:user) }
+
+    # 上記ユーザー情報のうち、email,password情報を用いてログインする（header情報の発行）、ログイン機能のテスト参照
+    before do
+      post(api_v1_user_session_path, params: { email: current_user.email, password: current_user.password })
+    end
 
     it "指定したidの記事のレコードが削除される" do
       expect { subject }.to change { Article.count }.by(-1)
