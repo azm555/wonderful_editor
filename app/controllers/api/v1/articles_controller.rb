@@ -1,6 +1,8 @@
 module Api
   module V1
     class ArticlesController < Api::V1::BaseApiController
+      before_action :authenticate_user!, only: [:create, :update, :destroy]
+
       def index
         @articles = Article.order("updated_at DESC")
         # binding.pry
@@ -15,8 +17,9 @@ module Api
       end
 
       def create
-        # current_user（User.firstのユーザー）に紐づけられた新規記事のインスタンスを生成・保存する
+        # current_userに紐づけられた新規記事のインスタンスを生成・保存する
         @article = current_user.articles.create!(article_params)
+        # binding.pry
         render json: @article, each_serializer: ArticleSerializer
       end
 
