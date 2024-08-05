@@ -4,10 +4,11 @@
 #
 #  id         :bigint           not null, primary key
 #  content    :text
+#  status     :integer          default("draft"), not null
 #  title      :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  user_id    :bigint           not null
+#  user_id    :bigint
 #
 # Indexes
 #
@@ -23,5 +24,13 @@ FactoryBot.define do
     sequence(:content) {|n| "記事本文#{n}" }
     user
     # association :user, factory: :user
+
+    trait :draft do
+      status { :draft }
+    end
+
+    trait :published do
+      status { :published }
+    end
   end
 end

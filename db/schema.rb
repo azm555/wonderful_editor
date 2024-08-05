@@ -20,7 +20,8 @@ ActiveRecord::Schema.define(version: 2024_06_30_035545) do
     t.text "content"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "user_id", null: false
+    t.bigint "user_id"
+    t.integer "status", default: 0, null: false
     t.index ["user_id"], name: "index_articles_on_user_id"
   end
 
@@ -28,8 +29,8 @@ ActiveRecord::Schema.define(version: 2024_06_30_035545) do
     t.text "content"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "user_id", null: false
-    t.bigint "article_id", null: false
+    t.bigint "user_id"
+    t.bigint "article_id"
     t.index ["article_id"], name: "index_comments_on_article_id"
     t.index ["user_id"], name: "index_comments_on_user_id"
   end
@@ -37,8 +38,8 @@ ActiveRecord::Schema.define(version: 2024_06_30_035545) do
   create_table "likes", force: :cascade do |t|
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.bigint "user_id", null: false
-    t.bigint "article_id", null: false
+    t.bigint "user_id"
+    t.bigint "article_id"
     t.index ["article_id"], name: "index_likes_on_article_id"
     t.index ["user_id"], name: "index_likes_on_user_id"
   end

@@ -4,10 +4,11 @@
 #
 #  id         :bigint           not null, primary key
 #  content    :text
+#  status     :integer          default("draft"), not null
 #  title      :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  user_id    :bigint           not null
+#  user_id    :bigint
 #
 # Indexes
 #
@@ -25,4 +26,7 @@ class Article < ApplicationRecord
 
   validates :title, presence: true
   validates :content, presence: true
+
+  # 記事の状態：draft（下書き）、published（公開）
+  enum status: { draft: 0, published: 1 }
 end
