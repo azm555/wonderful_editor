@@ -4,10 +4,11 @@
 #
 #  id         :bigint           not null, primary key
 #  content    :text
+#  status     :integer          default("draft"), not null
 #  title      :string
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
-#  user_id    :bigint           not null
+#  user_id    :bigint
 #
 # Indexes
 #
@@ -23,10 +24,18 @@ RSpec.describe Article, type: :model do
   # pending "add some examples to (or delete) #{__FILE__}"
 
   context "titleカラム及びcontentカラムを指定しているとき" do
-    it "記事が作成される" do
+    it "下書き記事が作成される" do
       FactoryBot.create(:user)
       # user = User.create!(name: "foo", password: "fooooo", email: "foo@example.com")
-      article = FactoryBot.build(:article)
+      article = FactoryBot.build(:article, :draft)
+      # article = user.articles.new(title: "abc", content: "abc")
+      expect(article).to be_valid
+    end
+
+    it "公開記事が作成される" do
+      FactoryBot.create(:user)
+      # user = User.create!(name: "foo", password: "fooooo", email: "foo@example.com")
+      article = FactoryBot.build(:article, :published)
       # article = user.articles.new(title: "abc", content: "abc")
       expect(article).to be_valid
     end
