@@ -12,7 +12,8 @@ module Api
       end
 
       def show
-        @article = Article.find(params[:id])
+        # 指定したidの公開された記事を取得する
+        @article = Article.published.find(params[:id])
         # binding.pry
         render json: @article, each_serializer: ArticleSerializer
       end

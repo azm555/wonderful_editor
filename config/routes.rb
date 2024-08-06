@@ -13,6 +13,11 @@ Rails.application.routes.draw do
         registrations: "api/v1/auth/registrations",
       }
       resources :articles
+
+      namespace :articles do
+        resources :drafts
+      end
+
     end
   end
 end
