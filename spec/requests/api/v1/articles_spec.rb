@@ -23,7 +23,7 @@ RSpec.describe "Api::V1::Articles", type: :request do
       # binding.pry
       # 取得した記事のそれぞれのstatusがpublishedであること
       res.each do |article|
-      expect(article["status"]).to eq "published"
+        expect(article["status"]).to eq "published"
       end
     end
 
