@@ -4,17 +4,27 @@ RSpec.describe "Api::V1::Articles", type: :request do
   describe "GET /api/v1/articles" do
     subject { get(api_v1_articles_path) } # 記事一覧取得:indexメソッドのpathへアクセスする（ルーティング確認）
 
-    # before { 3.times { FactoryBot.create(:article) } } # FactoryBotを介して記事情報を3つ作成
+    before { 3.times { FactoryBot.create(:article, :published) } } # FactoryBotを介して記事情報を3つ作成
     # before { create_list(:article, 3) } # FactoryBotのcreate_listメソッドを用いた記述に変更
-    before { create_list(:article, article_count) } # letを用いた記述に変更
+    # before { create_list(:article, article_count) } # letを用いた記述に変更
 
-    let(:article_count) { 3 }
+    # let(:article_count) { 3 }
 
     # rubocop推奨のため、"記事の一覧が取得できる"テストを分割表示した
-    it "記事情報がすべて返ってきていること" do
+    it "公開された記事情報がすべて返ってきていること" do
       subject
       res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
       expect(res.length).to eq 3
+    end
+
+    it "公開された記事のstatusがpublishedであること" do
+      subject
+      res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
+      # binding.pry
+      # 取得した記事のそれぞれのstatusがpublishedであること
+      res.each do |article|
+      expect(article["status"]).to eq "published"
+      end
     end
 
     it "返ってきた記事データがtitleのデータを持つこと" do
@@ -32,20 +42,20 @@ RSpec.describe "Api::V1::Articles", type: :request do
   describe "GET /api/v1/articles/:id" do
     subject { get(api_v1_article_path(article_id)) } # 記事詳細取得:showメソッドのpathへアクセスする（ルーティング確認）、詳細なのでidを指定するためarticle_id（letで定義した変数）を追記
 
-    context "指定したidの記事が存在するとき" do
+    context "指定したidの公開された記事が存在するとき" do
       let(:article_id) { article.id }
-      let(:article) { FactoryBot.create(:article) }
+      let(:article) { FactoryBot.create(:article, :published) }
 
       # rubocop推奨のため、"その記事のレコードが取得できる"というテストを2つに分割　"指定したidの記事データが返ってくること"と"ステータスコードが200であること"
       # さらに"指定したidの記事データが返ってくること"を2つに分割した
-      it "指定したidの記事データのうちタイトルが返ってくること" do # リクエストデータと返ってきた記事データが一致すること
+      it "指定したidの公開された記事データのうちタイトルが返ってくること" do # リクエストデータと返ってきた記事データが一致すること
         subject
         res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
         # binding.pry
         expect(res["title"]).to eq article.title
       end
 
-      it "指定したidの記事データのうち本文が返ってくること" do
+      it "指定したidの公開された記事データのうち本文が返ってくること" do
         subject
         res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
         expect(res["content"]).to eq article.content
@@ -57,7 +67,7 @@ RSpec.describe "Api::V1::Articles", type: :request do
       end
     end
 
-    context "指定したidの記事が存在しないとき" do
+    context "指定したidの公開された記事が存在しないとき" do
       let(:article_id) { 100000 } # 被らないidを指定するため、大きい数値を記述した
 
       it "記事のレコードが見つからない" do
@@ -114,6 +124,13 @@ RSpec.describe "Api::V1::Articles", type: :request do
         expect(res["content"]).to eq params[:article][:content]
       end
 
+      it "送ったパラメーターをもとに記事のレコード(statusカラム)が作成される" do
+        subject
+        res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
+        # res(レスポンス)の値（実際に作成されたレコードのうち、statusカラム）とリクエストとして送ったパラメーター（let(:params)）の値が一致すること
+        expect(res["status"]).to eq params[:article][:status]
+      end
+
       it "ステータスコードが200であること" do
         # current_user_mock = FactoryBot.create(:user)
         # allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(current_user_mock)
@@ -159,7 +176,8 @@ RSpec.describe "Api::V1::Articles", type: :request do
     let(:headers) do
       current_user.create_new_auth_token
     end
-    let(:article) { FactoryBot.create(:article) }
+    # 公開された記事を作成する
+    let(:article) { FactoryBot.create(:article, :published) }
 
     # 上記でidを指定して呼び出した記事に更新するパラメーターを送る
     # controllerのarticle_paramsにおけるparams.require(:article)に対応するようarticleキー（:article）に対するバリューの形式で送る
@@ -190,6 +208,11 @@ RSpec.describe "Api::V1::Articles", type: :request do
 
       # 指定したidの記事のcontentカラムが変わらない
       expect { subject }.not_to change { Article.find(article_id).content }
+    end
+
+    it "指定したidの記事のレコードのうち送っていないパラメーター（statusカラム）は変わらない" do
+      # 指定したidの記事のstatusカラムが変わらない
+      expect { subject }.not_to change { Article.find(article_id).status }
     end
 
     it "指定したidの記事のレコードのうち書き換え不可のパラメーター（created_atカラム）は変わらない" do
