@@ -4,7 +4,8 @@ module Api
       before_action :authenticate_user!, only: [:create, :update, :destroy]
 
       def index
-        @articles = Article.order("updated_at DESC")
+        # 公開された記事を更新日順に取得する
+        @articles = Article.published.order("updated_at DESC")
         # binding.pry
         render json: @articles, each_serializer: ArticlePreviewSerializer
         # renderメソッド使用時に、デフォルトではない上記シリアライザーを指定した
@@ -17,7 +18,7 @@ module Api
       end
 
       def create
-        # current_userに紐づけられた新規記事のインスタンスを生成・保存する
+        # current_userに紐づけられた新規記事のインスタンスを生成・保存する（status情報を含む）
         @article = current_user.articles.create!(article_params)
         # binding.pry
         render json: @article, each_serializer: ArticleSerializer
@@ -38,7 +39,7 @@ module Api
       private
 
         def article_params
-          params.require(:article).permit(:title, :content)
+          params.require(:article).permit(:title, :content, :status)
         end
     end
   end
