@@ -1,16 +1,17 @@
 require "rails_helper"
 
-RSpec.describe "Api::V1::Drafts", type: :request do
+RSpec.describe "Api::V1::Articles::Drafts", type: :request do
   describe "GET /api/v1/articles/drafts" do
     subject { get(api_v1_articles_drafts_path) } # 記事一覧取得:indexメソッドのpathへアクセスする（ルーティング確認）
 
     before { 3.times { FactoryBot.create(:article, :draft) } } # FactoryBotを介して下書きの記事情報を3つ作成
 
     # rubocop推奨のため、"記事の一覧が取得できる"テストを分割表示した
-    fit "下書きの記事情報がすべて返ってきていること" do
+    it "下書きの記事情報がすべて返ってきていること" do
+      # binding.pry
       subject
       res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
-      binding.pry
+      # binding.pry
       expect(res.length).to eq 3
     end
 
