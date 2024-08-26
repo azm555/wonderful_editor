@@ -19,7 +19,7 @@ RSpec.describe "Api::V1::Articles::Drafts", type: :request do
       subject
       res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
       # binding.pry
-      # 取得した記事のそれぞれのstatusがpublishedであること
+      # 取得した記事のそれぞれのstatusがdraftであること
       res.each do |article|
         expect(article["status"]).to eq "draft"
       end
