@@ -83,8 +83,9 @@ RSpec.describe "Api::V1::Articles", type: :request do
 
     context "適切なパラメーターを送信したとき" do
       # FactoryBotを用いて、ランダム生成されたtitle,contentパラメーターを、controllerのarticle_paramsにおけるparams.require(:article)に対応するようarticleキー（:article）に対するバリューの形式で送る
+      # ステータスは公開記事とした
       let(:params) do
-        { article: FactoryBot.attributes_for(:article) }
+        { article: FactoryBot.attributes_for(:article, status: "published") }
       end
       # ログインユーザー判別のためにheaders情報のうち、必要なトークン情報を送る
       let(:headers) do
@@ -124,7 +125,7 @@ RSpec.describe "Api::V1::Articles", type: :request do
         expect(res["content"]).to eq params[:article][:content]
       end
 
-      it "送ったパラメーターをもとに記事のレコード(statusカラム)が作成される" do
+      it "送ったパラメーターをもとに記事のレコード(statusカラム)が作成される" do # このとき作成記事は公開記事とした
         subject
         res = response.parsed_body # res = JSON.parse(response.body) rubocopにより推奨
         # res(レスポンス)の値（実際に作成されたレコードのうち、statusカラム）とリクエストとして送ったパラメーター（let(:params)）の値が一致すること
